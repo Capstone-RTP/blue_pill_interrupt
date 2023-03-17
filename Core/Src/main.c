@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "stepperControl.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -40,9 +41,9 @@
 
 /* Private variables ---------------------------------------------------------*/
 TIM_HandleTypeDef htim2;
+stepper motor;
 
 /* USER CODE BEGIN PV */
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -50,7 +51,6 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -87,30 +87,21 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-  HAL_GPIO_WritePin(DIR_GPIO_Port, DIR_Pin, SET);
-  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
+
+  //enable interrupts
+  __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
+  //initialize stepper
+  initStepper(&motor, &htim2, TIM_CHANNEL_2, DIR_GPIO_Port, DIR_Pin, 800);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  if(HAL_GPIO_ReadPin(DIR_GPIO_Port, DIR_Pin)){
+	  //Ask motor to do 2 full revolutions
+	  setTarget(&motor, 400);
 
-		  HAL_GPIO_WritePin(DIR_GPIO_Port, DIR_Pin, RESET);
-	  }
-	  else{
-		  HAL_GPIO_WritePin(DIR_GPIO_Port, DIR_Pin, SET);
-	  }
 
-	  if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_11)){
-		  HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_2);
-		  HAL_TIM_Base_Stop(&htim2);
-		  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, SET);
-	  }
-	  else{
-		  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, RESET);
-	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -229,12 +220,16 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(DIR_GPIO_Port, DIR_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(pulseTrack_GPIO_Port, pulseTrack_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : LED_Pin */
   GPIO_InitStruct.Pin = LED_Pin;
@@ -256,9 +251,31 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : pulseTrack_Pin */
+  GPIO_InitStruct.Pin = pulseTrack_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(pulseTrack_GPIO_Port, &GPIO_InitStruct);
+
 }
 
 /* USER CODE BEGIN 4 */
+void  HAL_TIM_PeriodElapsedCallback (TIM_HandleTypeDef * htim){
+	if(htim == &htim2){
+		if(motor.Status == RunningForward){
+			motor.CurrentPosition++;
+		}
+		else if (motor.Status == RunningBackward){
+			motor.CurrentPosition--;
+		}
+		HAL_GPIO_TogglePin(pulseTrack_GPIO_Port, pulseTrack_Pin);
+		if(motor.CurrentPosition == motor.TargetPosition){
+			HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_2);
+			motor.Status = Stopped;
+		}
+	}
+}
 
 /* USER CODE END 4 */
 

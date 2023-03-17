@@ -1,0 +1,3 @@
+../Core/Src/stepperControl.c:3:6:initStepper	24	static
+../Core/Src/stepperControl.c:17:6:setTarget	48	static
+../Core/Src/stepperControl.c:42:6:setSpeed	16	static
