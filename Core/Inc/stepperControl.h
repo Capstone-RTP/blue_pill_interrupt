@@ -29,7 +29,7 @@ typedef struct {
 }stepper;
 
 void initStepper(stepper * stepper, TIM_HandleTypeDef * tim, uint32_t  channel, GPIO_TypeDef * dirPort, uint16_t dirPin, uint32_t speed);
-void setTarget(stepper * stepper, int increment);
+void setTarget (stepper * stepper, uint64_t increment, char forward);
 void setSpeed(stepper * stepper, uint32_t speed);
 
 

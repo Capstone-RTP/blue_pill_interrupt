@@ -88,19 +88,17 @@ int main(void)
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 
-  //enable interrupts
+  //enable update interrupts
   __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
   //initialize stepper
-  initStepper(&motor, &htim2, TIM_CHANNEL_2, DIR_GPIO_Port, DIR_Pin, 800);
+  initStepper(&motor, &htim2, TIM_CHANNEL_2, DIR_GPIO_Port, DIR_Pin, 100);
   /* USER CODE END 2 */
-
+  //Ask motor to do 2 full revolutions in forward direction
+  setTarget(&motor, 400 , 1);
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  //Ask motor to do 2 full revolutions
-	  setTarget(&motor, 400);
-
 
     /* USER CODE END WHILE */
 
@@ -272,6 +270,7 @@ void  HAL_TIM_PeriodElapsedCallback (TIM_HandleTypeDef * htim){
 		HAL_GPIO_TogglePin(pulseTrack_GPIO_Port, pulseTrack_Pin);
 		if(motor.CurrentPosition == motor.TargetPosition){
 			HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_2);
+			HAL_TIM_Base_Stop(&htim2);
 			motor.Status = Stopped;
 		}
 	}
