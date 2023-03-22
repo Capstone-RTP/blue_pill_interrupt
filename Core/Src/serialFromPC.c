@@ -1,12 +1,15 @@
 #include "serialFromPC.h"
 
+/*
 void InitInstructionBuffer(){
 	instrBufferElements = 0;
 	instrBufferLastIndex = (*Instruction)(INSTR_BUFFER_SIZE);
 	instrStart = instrBuffer;
 	instrEnd = instrBuffer;
 }
+*/
 
+/*
 *Instruction ReadInstructionBuffer(){
 	*Instruction i = start;
 	instrStart++;
@@ -22,3 +25,4 @@ void WriteInstructionBuffer(Instruction i){
 	instrEnd++
 	
 }
+*/

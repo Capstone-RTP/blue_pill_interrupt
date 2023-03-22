@@ -60,8 +60,8 @@ all: main-build
 main-build: blue_pill_interrupt.elf secondary-outputs
 
 # Tool invocations
-blue_pill_interrupt.elf blue_pill_interrupt.map: $(OBJS) $(USER_OBJS) C:\Code\STM32\blue_pill_interrupt\STM32F103C6TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "blue_pill_interrupt.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"C:\Code\STM32\blue_pill_interrupt\STM32F103C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="blue_pill_interrupt.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+blue_pill_interrupt.elf blue_pill_interrupt.map: $(OBJS) $(USER_OBJS) C:\ST\blue_pill_interrupt\STM32F103C6TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "blue_pill_interrupt.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"C:\ST\blue_pill_interrupt\STM32F103C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="blue_pill_interrupt.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

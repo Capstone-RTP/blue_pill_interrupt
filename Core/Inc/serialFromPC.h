@@ -20,12 +20,11 @@ typedef struct Instruction{
 //variable definitions
 char instrBufferElements;
 Instruction instrBuffer[INSTR_BUFFER_SIZE];
-*Instruction instrStart,instrEnd,instrBufferLastIndex;
-
+Instruction* instrStart,instrEnd,instrBufferLastIndex;
 
 //function prototypes
 void InitInstructionBuffer();
-*Instruction ReadInstructionBuffer();
+Instruction* ReadInstructionBuffer();
 void WriteinstructionBuffer(Instruction i);
 void InitSerialFromPC();
 

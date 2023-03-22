@@ -19,6 +19,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stepperControl.h"
+#include <stdio.h>
+#include <stdlib.h>
+//#include "serialFromPC.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -42,6 +45,8 @@
 /* Private variables ---------------------------------------------------------*/
 TIM_HandleTypeDef htim2;
 stepper motor;
+int currentPos = 0;
+int instructionCounter = 0;
 
 /* USER CODE BEGIN PV */
 /* USER CODE END PV */
@@ -65,6 +70,10 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
 
+	char direction;
+	int relativePos;
+	int instr[] = {50, -50, 50, -50, 50, -50, 50, -50, 50};
+	int i = 0;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -91,17 +100,45 @@ int main(void)
   //enable update interrupts
   __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
   //initialize stepper
-  initStepper(&motor, &htim2, TIM_CHANNEL_2, DIR_GPIO_Port, DIR_Pin, 100);
+  initStepper(&motor, &htim2, TIM_CHANNEL_2, DIR_GPIO_Port, DIR_Pin, 800);
   /* USER CODE END 2 */
   //Ask motor to do 2 full revolutions in forward direction
-  setTarget(&motor, 400 , 1);
+  //setTarget(&motor, 50 , 1);
+  HAL_Delay(2000);
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
+	  /*
+	  setTarget(&motor, 100, 1);
+	  HAL_Delay(2000);
+	  setTarget(&motor, 100, 0);
+	  HAL_Delay(2000);
+	  */
     /* USER CODE END WHILE */
+	//if motor is waiting for an instruction
+	  if(motor.Status == Stopped && i<8){
 
+		//find relative direction and position
+		//update current position
+		relativePos = instr[i] - currentPos;
+		//relativePos = instr[i];
+		currentPos = instr[i];
+		if(relativePos > 0){
+			direction = 1;
+		}
+		else{
+			direction = 0;
+			relativePos = relativePos*-1; //switch sign so that it is positive
+		}
+		//TODO: account for relativePos = 0
+
+		//set target for motor
+		setTarget(&motor, relativePos, 0);
+		i++;
+		//add delay for testing
+		HAL_Delay(2000);
+	}
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
