@@ -18,14 +18,13 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "stepperControl.h"
-#include <stdio.h>
-#include <stdlib.h>
-//#include "serialFromPC.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "main.h"
+#include "stepperControl.h"
+#include <stdio.h>
+#include <stdlib.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -44,11 +43,14 @@
 
 /* Private variables ---------------------------------------------------------*/
 TIM_HandleTypeDef htim2;
+
+UART_HandleTypeDef huart1;
+
+/* USER CODE BEGIN PV */
+TIM_HandleTypeDef htim2;
 stepper motor;
 int currentPos = 0;
 int instructionCounter = 0;
-
-/* USER CODE BEGIN PV */
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -98,7 +100,8 @@ int main(void)
   MX_TIM2_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-  HAL_UART_Transmit(&huart2,65,sizeof(65),10);//
+  uint8_t test[] = "HW\r\n";
+  HAL_UART_Transmit(&huart1,test,sizeof(test),10);//
 
   //enable update interrupts
   __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
@@ -316,11 +319,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(DIR_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA11 DIRA15_Pin */
-  GPIO_InitStruct.Pin = GPIO_PIN_11|DIRA15_Pin;
+  /*Configure GPIO pin : DIRA15_Pin */
+  GPIO_InitStruct.Pin = DIRA15_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_GPIO_Init(DIRA15_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : pulseTrack_Pin */
   GPIO_InitStruct.Pin = pulseTrack_Pin;
