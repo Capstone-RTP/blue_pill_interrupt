@@ -116,6 +116,8 @@ int main(void)
 	  setTarget(&motor, 100, 0);
 	  HAL_Delay(2000);
 	  */
+	  HAL_UART_Transmit(&huart1,test,sizeof(test),10);//
+	  HAL_Delay(2000);
     /* USER CODE END WHILE */
 	//if motor is waiting for an instruction
 	  if(motor.Status == Stopped && i<8){
