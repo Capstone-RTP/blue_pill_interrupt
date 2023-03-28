@@ -1,20 +1,20 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2023 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file           : main.c
+ * @brief          : Main program body
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2023 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -22,9 +22,11 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "main.h"
-#include "stepperControl.h"
+#include "stm32f1xx.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "stepperControl.h"
+#include "serialFromPC.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -49,8 +51,11 @@ UART_HandleTypeDef huart1;
 /* USER CODE BEGIN PV */
 TIM_HandleTypeDef htim2;
 stepper motor;
+uint8_t usartTempBuffer[32];
 int currentPos = 0;
 int instructionCounter = 0;
+int testISR = 0;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -63,6 +68,20 @@ static void MX_USART1_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+
+	//mirror to serial (remember to remove this)
+	//uint8_t isr_string[] = "STRING RECIEVED\n\r";
+	//HAL_UART_Transmit(huart, isr_string, sizeof(isr_string), 10);
+	//HAL_UART_Transmit(huart, usartTempBuffer, sizeof(char), 10);
+	//call interrupt again when another 8 chars comes in
+	testISR++;
+	HAL_UART_Receive_IT(&huart1, usartTempBuffer, 1);
+
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -75,7 +94,7 @@ int main(void)
 
 	char direction;
 	int relativePos;
-	int instr[] = {50, -50, 50, -50, 50, -50, 50, -50, 50};
+	int instr[] = { 50, -50, 50, -50, 50, -50, 50, -50, 50 };
 	int i = 0;
   /* USER CODE END 1 */
 
@@ -85,6 +104,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
+	InitSerialFromPC(&huart1);
 
   /* USER CODE END Init */
 
@@ -100,53 +120,66 @@ int main(void)
   MX_TIM2_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-  uint8_t test[] = "HW\r\n";
-  HAL_UART_Transmit(&huart1,test,sizeof(test),10);//
+	uint8_t test[] = "---DEVICE RESET---\n\r";
+	HAL_UART_Transmit(&huart1, test, sizeof(test), 10); //
 
-  //enable update interrupts
-  __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
-  //initialize stepper
-  initStepper(&motor, &htim2, TIM_CHANNEL_2, DIR_GPIO_Port, DIR_Pin, 800);
+	//enable update interrupts
+	__HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
+	HAL_UART_Receive_IT(&huart1, usartTempBuffer, 4);
+	//initialize stepper
+	initStepper(&motor, &htim2, TIM_CHANNEL_2, DIR_GPIO_Port, DIR_Pin, 800);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-	  /*
-	  setTarget(&motor, 100, 1);
-	  HAL_Delay(2000);
-	  setTarget(&motor, 100, 0);
-	  HAL_Delay(2000);
-	  */
-	  HAL_UART_Transmit(&huart1,test,sizeof(test),10);//
-	  HAL_Delay(2000);
-    /* USER CODE END WHILE */
-	//if motor is waiting for an instruction
-	  if(motor.Status == Stopped && i<8){
-
-		//find relative direction and position
-		//update current position
-		relativePos = instr[i] - currentPos;
-		//relativePos = instr[i];
-		currentPos = instr[i];
-		if(relativePos > 0){
-			direction = 1;
-		}
-		else{
-			direction = 0;
-			relativePos = relativePos*-1; //switch sign so that it is positive
-		}
-		//TODO: account for relativePos = 0
-
-		//set target for motor
-		setTarget(&motor, relativePos, 0);
-		i++;
-		//add delay for testing
+	while (1) {
+		//PROBLEM:output buffer must be in main!
+		//HAL_UART_Receive (&huart1, usartTempBuffer, 1, 100);
+		//HAL_UART_Transmit(&huart1, usartTempBuffer, 1, 10);
 		HAL_Delay(2000);
+		SendSerialInt(testISR);
+
+		/*
+		 setTarget(&motor, 100, 1);
+		 HAL_Delay(2000);
+		 setTarget(&motor, 100, 0);
+		 HAL_Delay(2000);
+		 */
+
+		/*
+		 HAL_UART_Transmit(&huart1,test,sizeof(test),10);//
+		 HAL_Delay(2000);
+		 */
+
+		//if motor is waiting for an instruction
+		if(0){
+		//if (motor.Status == Stopped && i < 8) {
+
+			//find relative direction and position
+			//update current position
+			relativePos = instr[i] - currentPos;
+			//relativePos = instr[i];
+			currentPos = instr[i];
+			if (relativePos > 0) {
+				direction = 1;
+			} else {
+				direction = 0;
+				relativePos = relativePos * -1; //switch sign so that it is positive
+			}
+			//TODO: account for relativePos = 0
+
+			//set target for motor
+			setTarget(&motor, relativePos, 0);
+			i++;
+			SendSerialInt(relativePos);
+			SendSerialInt(direction);
+			//add delay for testing
+			HAL_Delay(2000);
+		}
 	}
+    /* USER CODE END WHILE */
+
     /* USER CODE BEGIN 3 */
-  }
   /* USER CODE END 3 */
 }
 
@@ -335,22 +368,22 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void  HAL_TIM_PeriodElapsedCallback (TIM_HandleTypeDef * htim){
-	if(htim == &htim2){
-		if(motor.Status == RunningForward){
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+	if (htim == &htim2) {
+		if (motor.Status == RunningForward) {
 			motor.CurrentPosition++;
-		}
-		else if (motor.Status == RunningBackward){
+		} else if (motor.Status == RunningBackward) {
 			motor.CurrentPosition--;
 		}
 		HAL_GPIO_TogglePin(pulseTrack_GPIO_Port, pulseTrack_Pin);
-		if(motor.CurrentPosition == motor.TargetPosition){
+		if (motor.CurrentPosition == motor.TargetPosition) {
 			HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_2);
 			HAL_TIM_Base_Stop(&htim2);
 			motor.Status = Stopped;
 		}
 	}
 }
+
 
 /* USER CODE END 4 */
 
@@ -361,11 +394,10 @@ void  HAL_TIM_PeriodElapsedCallback (TIM_HandleTypeDef * htim){
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-  __disable_irq();
-  while (1)
-  {
-  }
+	/* User can add his own implementation to report the HAL error return state */
+	__disable_irq();
+	while (1) {
+	}
   /* USER CODE END Error_Handler_Debug */
 }
 

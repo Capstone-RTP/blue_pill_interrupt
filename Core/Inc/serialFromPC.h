@@ -9,6 +9,14 @@
 #define INC_SERIALFROMPC_H
  
 #define INSTR_BUFFER_SIZE 32
+#define OUTPUT_BUFFER_SIZE 64
+#define INPUT_BUFFER_SIZE 64
+
+#include <stdint.h>
+#include <stdio.h>
+#include "stm32f1xx.h"
+
+static uint8_t *usartInputBuffer;
 
 //type definitions 
 typedef struct Instruction{
@@ -18,15 +26,20 @@ typedef struct Instruction{
 } Instruction;
 
 //variable definitions
-char instrBufferElements;
-Instruction instrBuffer[INSTR_BUFFER_SIZE];
-Instruction* instrStart,instrEnd,instrBufferLastIndex;
+
+//Instruction instrBuffer[INSTR_BUFFER_SIZE];
+//Instruction* instrStart,instrEnd,instrBufferLastIndex;
 
 //function prototypes
+/*
 void InitInstructionBuffer();
 Instruction* ReadInstructionBuffer();
 void WriteinstructionBuffer(Instruction i);
-void InitSerialFromPC();
+*/
+void InitSerialFromPC(UART_HandleTypeDef* huartHandler);
+void SendSerialInt(uint16_t message);
+void SendSerialNewLine();
+uint8_t* GetInputBufferAddress();
 
 #endif
  

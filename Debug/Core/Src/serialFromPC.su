@@ -1,0 +1,4 @@
+../Core/Src/serialFromPC.c:10:6:InitSerialFromPC	16	static
+../Core/Src/serialFromPC.c:16:6:SendSerialNewLine	8	static
+../Core/Src/serialFromPC.c:21:6:SendSerialInt	24	static
+../Core/Src/serialFromPC.c:31:10:GetInputBufferAddress	4	static
