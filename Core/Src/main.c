@@ -51,10 +51,15 @@ UART_HandleTypeDef huart1;
 /* USER CODE BEGIN PV */
 TIM_HandleTypeDef htim2;
 stepper motor;
-uint8_t usartTempBuffer[32];
+
+//note: buffer must be declared in main
+uint8_t rxBuffer[16]; //allocate mem for 16 chars
+
+Instruction nextInstr;
 int currentPos = 0;
 int instructionCounter = 0;
-int testISR = 0;
+
+uint8_t uartRecievedFlag = 0;
 
 /* USER CODE END PV */
 
@@ -71,15 +76,11 @@ static void MX_USART1_UART_Init(void);
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
+	//NOTE: do not put HAL_UART_Transmit here because it is blocking
 
-	//mirror to serial (remember to remove this)
-	//uint8_t isr_string[] = "STRING RECIEVED\n\r";
-	//HAL_UART_Transmit(huart, isr_string, sizeof(isr_string), 10);
-	//HAL_UART_Transmit(huart, usartTempBuffer, sizeof(char), 10);
-	//call interrupt again when another 8 chars comes in
-	testISR++;
-	HAL_UART_Receive_IT(&huart1, usartTempBuffer, 1);
 
+	//set flag
+	uartRecievedFlag = 1;
 }
 
 /* USER CODE END 0 */
@@ -94,8 +95,12 @@ int main(void)
 
 	char direction;
 	int relativePos;
+
+	/*
 	int instr[] = { 50, -50, 50, -50, 50, -50, 50, -50, 50 };
 	int i = 0;
+	*/
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -104,7 +109,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-	InitSerialFromPC(&huart1);
+	InitSerialFromPC(&huart1,rxBuffer);
 
   /* USER CODE END Init */
 
@@ -125,7 +130,7 @@ int main(void)
 
 	//enable update interrupts
 	__HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
-	HAL_UART_Receive_IT(&huart1, usartTempBuffer, 4);
+	HAL_UART_Receive_IT(&huart1, rxBuffer, 6); //receive 6 bytes
 	//initialize stepper
 	initStepper(&motor, &htim2, TIM_CHANNEL_2, DIR_GPIO_Port, DIR_Pin, 800);
   /* USER CODE END 2 */
@@ -133,24 +138,20 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	while (1) {
-		//PROBLEM:output buffer must be in main!
-		//HAL_UART_Receive (&huart1, usartTempBuffer, 1, 100);
-		//HAL_UART_Transmit(&huart1, usartTempBuffer, 1, 10);
-		HAL_Delay(2000);
-		SendSerialInt(testISR);
+
+		//check if data has been received
+		if(uartRecievedFlag){
+
+			//retrieve instructions
+			ParseInstructions(rxBuffer, &nextInstr);
+			//enable receive interrupt
+			uartRecievedFlag = 0;
+			HAL_UART_Receive_IT(&huart1, rxBuffer, 6);
+			//send ack
+			SendSerialChar('a');
+		}
 
 		/*
-		 setTarget(&motor, 100, 1);
-		 HAL_Delay(2000);
-		 setTarget(&motor, 100, 0);
-		 HAL_Delay(2000);
-		 */
-
-		/*
-		 HAL_UART_Transmit(&huart1,test,sizeof(test),10);//
-		 HAL_Delay(2000);
-		 */
-
 		//if motor is waiting for an instruction
 		if(0){
 		//if (motor.Status == Stopped && i < 8) {
@@ -175,7 +176,9 @@ int main(void)
 			SendSerialInt(direction);
 			//add delay for testing
 			HAL_Delay(2000);
+
 		}
+		*/
 	}
     /* USER CODE END WHILE */
 

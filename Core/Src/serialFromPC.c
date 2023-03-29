@@ -3,14 +3,14 @@
 char instrBufferElements;
 uint8_t newLine = '\n';
 uint8_t carriageReturn = '\r';
-uint8_t usartOutputBuffer[OUTPUT_BUFFER_SIZE];
 
 UART_HandleTypeDef* huart;
 
-void InitSerialFromPC(UART_HandleTypeDef* huartHandler){
+void InitSerialFromPC(UART_HandleTypeDef* huartHandler, uint8_t* rxBuffer){
 	huart = huartHandler;
 	//allocate for buffer
 	usartInputBuffer = (uint8_t*)calloc(INPUT_BUFFER_SIZE,sizeof(uint8_t));
+	usartOutputBuffer = rxBuffer;
 }
 
 void SendSerialNewLine(){
@@ -28,8 +28,26 @@ void SendSerialInt(uint16_t message){
 	SendSerialNewLine();
 }
 
+void SendSerialChar(uint8_t c){
+	HAL_UART_Transmit(huart,&c,1,10);
+}
+
 uint8_t* GetInputBufferAddress(){
 	return usartInputBuffer;
+}
+
+void ParseInstructions(uint8_t* rxBuffer, Instruction* i){
+	//assume that the characters were sent r,th,y
+
+	uint16_t temp[3];
+
+	for(int a = 0; a < 3; a++){
+		temp[a] = rxBuffer[2*a] | (rxBuffer[2*a+1] << 8);
+	}
+
+	i->r = temp[0];
+	i->th = temp[1];
+	i->y = temp[2];
 }
 
 /*
