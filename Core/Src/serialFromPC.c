@@ -1,6 +1,6 @@
 #include "serialFromPC.h"
 
-char instrBufferElements;
+//char instrBufferElements;
 uint8_t newLine = '\n';
 uint8_t carriageReturn = '\r';
 
@@ -9,7 +9,7 @@ UART_HandleTypeDef* huart;
 void InitSerialFromPC(UART_HandleTypeDef* huartHandler, uint8_t* rxBuffer){
 	huart = huartHandler;
 	//allocate for buffer
-	usartInputBuffer = (uint8_t*)calloc(INPUT_BUFFER_SIZE,sizeof(uint8_t));
+	//usartInputBuffer = (uint8_t*)calloc(INPUT_BUFFER_SIZE,sizeof(uint8_t));
 	usartOutputBuffer = rxBuffer;
 }
 
@@ -33,11 +33,7 @@ void SendSerialChar(uint8_t c){
 }
 
 void SendSerialInt(uint16_t i){
-	HAL_UART_Transmit(huart,(uint16_t*)(&i),sizeof(uint16_t),10);
-}
-
-uint8_t* GetInputBufferAddress(){
-	return usartInputBuffer;
+	HAL_UART_Transmit(huart,(uint8_t*)(&i),sizeof(uint16_t),10);
 }
 
 void ParseInstructions(uint8_t* rxBuffer, Instruction* i){

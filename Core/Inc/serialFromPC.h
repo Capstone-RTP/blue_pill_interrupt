@@ -26,24 +26,17 @@ typedef struct Instruction{
 } Instruction;
 
 //variable definitions
-static uint8_t *usartInputBuffer;
 static uint8_t *usartOutputBuffer;
 
 //Instruction instrBuffer[INSTR_BUFFER_SIZE];
 //Instruction* instrStart,instrEnd,instrBufferLastIndex;
 
 //function prototypes
-/*
-void InitInstructionBuffer();
-Instruction* ReadInstructionBuffer();
-void WriteinstructionBuffer(Instruction i);
-*/
 void InitSerialFromPC(UART_HandleTypeDef* huartHandler, uint8_t* rxBuffer);
 void SendSerialIntText(uint16_t message);
 void SendSerialNewLine();
 void SendSerialChar(uint8_t c);
 void SendSerialInt(uint16_t i);
-uint8_t* GetInputBufferAddress();
 void ParseInstructions(uint8_t* rxBuffer, Instruction* i);
 
 #endif
