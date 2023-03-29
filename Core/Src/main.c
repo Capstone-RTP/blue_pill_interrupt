@@ -149,6 +149,7 @@ int main(void)
 			HAL_UART_Receive_IT(&huart1, rxBuffer, 6);
 			//send ack
 			SendSerialChar('a');
+
 		}
 
 		/*
@@ -354,12 +355,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(DIR_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : DIRA15_Pin */
-  GPIO_InitStruct.Pin = DIRA15_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(DIRA15_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : pulseTrack_Pin */
   GPIO_InitStruct.Pin = pulseTrack_Pin;

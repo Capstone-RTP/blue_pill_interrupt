@@ -63,8 +63,6 @@ void Error_Handler(void);
 #define LED_GPIO_Port GPIOC
 #define DIR_Pin GPIO_PIN_2
 #define DIR_GPIO_Port GPIOA
-#define DIRA15_Pin GPIO_PIN_15
-#define DIRA15_GPIO_Port GPIOA
 #define pulseTrack_Pin GPIO_PIN_5
 #define pulseTrack_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
