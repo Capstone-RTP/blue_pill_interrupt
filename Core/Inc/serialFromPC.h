@@ -39,9 +39,10 @@ Instruction* ReadInstructionBuffer();
 void WriteinstructionBuffer(Instruction i);
 */
 void InitSerialFromPC(UART_HandleTypeDef* huartHandler, uint8_t* rxBuffer);
-void SendSerialInt(uint16_t message);
+void SendSerialIntText(uint16_t message);
 void SendSerialNewLine();
 void SendSerialChar(uint8_t c);
+void SendSerialInt(uint16_t i);
 uint8_t* GetInputBufferAddress();
 void ParseInstructions(uint8_t* rxBuffer, Instruction* i);
 

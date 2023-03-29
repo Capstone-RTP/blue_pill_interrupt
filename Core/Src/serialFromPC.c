@@ -18,7 +18,7 @@ void SendSerialNewLine(){
 	HAL_UART_Transmit(huart,&carriageReturn,1,10);
 }
 
-void SendSerialInt(uint16_t message){
+void SendSerialIntText(uint16_t message){
 	//get number of characters for message
 	uint16_t length = snprintf(NULL, 0, "%d", message);
 	//copy string into buffer
@@ -30,6 +30,10 @@ void SendSerialInt(uint16_t message){
 
 void SendSerialChar(uint8_t c){
 	HAL_UART_Transmit(huart,&c,1,10);
+}
+
+void SendSerialInt(uint16_t i){
+	HAL_UART_Transmit(huart,(uint16_t*)(&i),sizeof(uint16_t),10);
 }
 
 uint8_t* GetInputBufferAddress(){
